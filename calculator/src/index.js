@@ -5,7 +5,7 @@ import './index.css';
 
 function Square(props) {
     return (
-      <button className="square" onClick={props.onClick}>
+      <button className={props.squareClass} onClick={props.onClick}>
         {props.value}
       </button>
     );
@@ -13,10 +13,21 @@ function Square(props) {
 
 class Board extends Component {
   renderSquare(i) {
+    var squareClass = 'square'
+    let line = this.props.winLine
+    let x;
+          // if a number in the winning line equals the current number
+      if ((line !== null) && (line[0] === i || line[1] === i || line[2] === i)) {
+        squareClass = 'winnerSquare'; // set class of square to be winner class. 
+      }
+
+    
+
     return ( 
       <Square 
         value={this.props.squares[i]}
         onClick={ () => {this.props.onClick(i)} }
+        squareClass = {squareClass}
       />
     );
   }
@@ -52,38 +63,45 @@ class Game extends Component {
         squares: Array(9).fill(null)
       }],
       stepNumber: 0,
-      xIsNext: true
+      xIsNext: true,
+      winLine: [null]
     };
   }
+
 
   handleClick(i) {
     const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length - 1];
     const squares = current.squares.slice(); // makes copy of array for imutability (so not editing original state). 
-    if (checkWinner(squares) || squares[i]) { // if someone won, or if that square already has a value. 
+    
+    if (squares[i] || checkWinner(squares).winner) { // if there is winner or full square
       return; // then skip updating the square
     }
+
     squares[i] = this.state.xIsNext ? "X" : "0";
     this.setState({
       history: history.concat([{ 
         squares: squares, 
       }]),
       stepNumber: history.length,
-      xIsNext: !this.state.xIsNext
+      xIsNext: !this.state.xIsNext,
+      winLine: checkWinner(squares).line
     }); // then sets state.
   }
 
   jumpTo(step) {
     this.setState({
       stepNumber: step,
-      xIsNext: (step % 2) === 0 
+      xIsNext: (step % 2) === 0, 
+      winLine: checkWinner(this.state.history[step].squares).line
     });
   }
 
   render() {
     const history = this.state.history;
     const current = history[this.state.stepNumber];
-    const winner = checkWinner(current.squares);
+      
+    let winner = checkWinner(current.squares).winner;
 
     let status;
     if (winner) {
@@ -111,6 +129,7 @@ class Game extends Component {
           <Board 
             squares = { current.squares }
             onClick = { (i) => this.handleClick(i) }
+            winLine = {this.state.winLine}
           />
 
         </div>
@@ -148,9 +167,19 @@ function checkWinner(squares) {
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      //highlight the winning lines
+      
+      return { 
+        "line": lines[i],
+        "winner": squares[a]
+      };
     }
   }
-  return null;
+  return { 
+        "line": null,
+        "winner": null
+      };
+
+  Game.setWinline();
 }
 
