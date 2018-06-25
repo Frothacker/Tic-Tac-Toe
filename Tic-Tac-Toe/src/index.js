@@ -21,8 +21,6 @@ class Board extends Component {
         squareClass = 'winnerSquare'; // set class of square to be winner class. 
       }
 
-    
-
     return ( 
       <Square 
         value={this.props.squares[i]}
