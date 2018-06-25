@@ -1,2 +1,2 @@
-# react-calculator
-Building a quick app using ReactJS to learn react. 
+# Tic Tac Toe
+React JS practice activity, just to see if I could
